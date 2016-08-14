@@ -80,7 +80,6 @@ grammar:(side;vol;accept[OF;"of"];ident;accept[AT;"at"];num;modifier;forClause;a
 // wrap to avoid having errors return deeper functions (no need to worry
 // user with implementation)
 parser:{@[raze consume[grammar; ] tokenize@;x;{'x}]}
-.o.e:parser
 
 
 /
