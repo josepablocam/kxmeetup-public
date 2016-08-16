@@ -53,14 +53,21 @@ object OrderlyParser extends JavaTokenParsers {
       | failure("Volumes can be specified as <whole-number> shares or $<numeric>")
       )
 
-  def modifier: Parser[Either[Verbatim, PString]] = positioned(
-    IF ~> validCode ^^ { c => Left(Verbatim(c)) }
+  def modifier: Parser[Either[Verbatim, PString]] = (
+    IF ~> validCode ^^ { c =>
+      val wrap = Verbatim(c.str)
+      wrap.setPos(c.pos)
+      Left(wrap)
+    }
     | ON ~> validDate ^^ { Right(_) }
     | failure("Modifiers must be identifier (lambda), quoted q code or on <date>")
     )
 
 
-  def validCode: Parser[String] = cleanIdent | stringLiteral
+  def validCode: Parser[PString] = positioned(
+    cleanIdent ^^ { PString }
+      | stringLiteral ^^ { PString }
+  )
 
   def validDate: Parser[PString] = positioned(
     date.filter { ps => Try(dateParser.parse(ps.str)).isSuccess }
