@@ -26,8 +26,8 @@ object OrderlyParser extends JavaTokenParsers {
   val FOR = Keyword("for")
   val IF = Keyword("if")
 
-  // orderly programs are a series of insertions
-  def program = rep1(order ~ ("->" ~> cleanIdent) ^^ { case o ~ t => (o, t) })
+  // orderly programs are a sequence of insertions
+  def program = rep1(order ~ ("->" ~> cleanIdent) ^^ { case o ~ t => SingleInsert(t, o) })
 
   // market order
   def order: Parser[MarketOrder] = positioned(
@@ -36,13 +36,7 @@ object OrderlyParser extends JavaTokenParsers {
       (AT ~> floatingPointNumber)~
       modifier ~
       (FOR ~> cleanIdent).? ^^ {
-      case s ~ v ~ sym ~ px ~ m ~ c =>
-        val price = px.toDouble
-        val vol = v match {
-          case NumShares(shares) => shares
-          case USDAmount(amount) => amount / price
-        }
-        MarketOrder(s, sym, vol, price, m, c)
+      case s ~ v ~ sym ~ px ~ m ~ c => MarketOrder(s, sym, v, PDouble(px.toDouble), m, c)
     }
     | failure ("Marked orders should specify side, volume of purchase, ticker, price, modifier and optionally a client")
     )
@@ -60,21 +54,30 @@ object OrderlyParser extends JavaTokenParsers {
       )
 
   def modifier: Parser[Either[Verbatim, PString]] = (
-    IF ~> validCode ^^ { c => Left(Verbatim(c)) }
+    IF ~> validCode ^^ { c =>
+      val wrap = Verbatim(c.str)
+      wrap.setPos(c.pos)
+      Left(wrap)
+    }
     | ON ~> validDate ^^ { Right(_) }
     | failure("Modifiers must be identifier (lambda), quoted q code or on <date>")
     )
 
 
-  def validCode: Parser[String] = cleanIdent | stringLiteral
+  def validCode: Parser[PString] = positioned(
+    cleanIdent ^^ { PString }
+      | stringLiteral ^^ { PString }
+  )
 
   def validDate: Parser[PString] = positioned(
     date.filter { ps => Try(dateParser.parse(ps.str)).isSuccess }
   | failure("Invalid date provided")
   )
 
-  def date: Parser[PString] =
-    positioned(wholeNumber ~ ('/' ~> wholeNumber) ~ ('/' ~> wholeNumber) ^^ { case m ~ d ~ y => PString(m + "/" + d + "/" + y)}
+  def date: Parser[PString] = positioned(
+    wholeNumber ~ ('/' ~> wholeNumber) ~ ('/' ~> wholeNumber) ^^ {
+      case m ~ d ~ y => PString(m + "/" + d + "/" + y)
+    }
       | failure("Expected date as MM/dd/yyyy")
       )
 

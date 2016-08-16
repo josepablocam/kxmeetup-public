@@ -48,9 +48,9 @@ accept:{[p;s;e]$[p e 0;(();1);error["Expected ",s;" found ",getStr[e;0]]]}
 side:{$[BUY x 0; (`buy;1); SELL x 0;(`sell;1); error["Expected side";" found ",getStr[x;0]]]}
 vol:{
   $[SHARES x 1;
-    (first num x;2);
+    ((first num x;`shares);2);
   "$"~first x 0;
-    (first num enlist 1_x 0;1);
+    ((first num enlist 1_x 0;`usd);1);
   error["Expected volume";" found "," " sv (),/:2#x]
   ]
  }
@@ -80,7 +80,6 @@ grammar:(side;vol;accept[OF;"of"];ident;accept[AT;"at"];num;modifier;forClause;a
 // wrap to avoid having errors return deeper functions (no need to worry
 // user with implementation)
 parser:{@[raze consume[grammar; ] tokenize@;x;{'x}]}
-.o.e:parser
 
 
 /

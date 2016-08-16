@@ -10,16 +10,24 @@ case class Verbatim(str: String) extends Positional
 // wrap on normal string to provide error messages with location later on
 case class PString(str: String) extends Positional
 
-abstract class Volume extends Positional
-case class NumShares(v: Int) extends Volume
+abstract class Volume extends Positional {
+  def v: Double
+}
+case class NumShares(v: Double) extends Volume
 case class USDAmount(v: Double) extends Volume
+
+// wrap normal double for error messages with location
+case class PDouble(v: Double) extends Positional
 
 case class MarketOrder(
   side: Side,
   sym: String,
-  shares: Double,
-  px: Double,
+  volume: Volume,
+  px: PDouble,
   when: Either[Verbatim, PString],
   client: Option[String]) extends Positional
 
-case class BulkInsert(t: String, orders: Seq[MarketOrder]) extends Positional
+
+abstract class OrderInsert extends Positional
+case class BulkInsert(t: String, orders: Seq[MarketOrder]) extends OrderInsert
+case class SingleInsert(t: String, order: MarketOrder) extends OrderInsert
