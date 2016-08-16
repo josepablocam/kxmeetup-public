@@ -26,8 +26,8 @@ object OrderlyParser extends JavaTokenParsers {
   val FOR = Keyword("for")
   val IF = Keyword("if")
 
-  // orderly programs are a series of insertions
-  def program = rep1(order ~ ("->" ~> cleanIdent) ^^ { case o ~ t => (o, t) })
+  // orderly programs are a sequence of insertions
+  def program = rep1(order ~ ("->" ~> cleanIdent) ^^ { case o ~ t => SingleInsert(t, o) })
 
   // market order
   def order: Parser[MarketOrder] = positioned(
@@ -36,13 +36,7 @@ object OrderlyParser extends JavaTokenParsers {
       (AT ~> floatingPointNumber)~
       modifier ~
       (FOR ~> cleanIdent).? ^^ {
-      case s ~ v ~ sym ~ px ~ m ~ c =>
-        val price = px.toDouble
-        val vol = v match {
-          case NumShares(shares) => shares
-          case USDAmount(amount) => amount / price
-        }
-        MarketOrder(s, sym, vol, price, m, c)
+      case s ~ v ~ sym ~ px ~ m ~ c => MarketOrder(s, sym, v, PDouble(px.toDouble), m, c)
     }
     | failure ("Marked orders should specify side, volume of purchase, ticker, price, modifier and optionally a client")
     )
@@ -59,7 +53,7 @@ object OrderlyParser extends JavaTokenParsers {
       | failure("Volumes can be specified as <whole-number> shares or $<numeric>")
       )
 
-  def modifier: Parser[Either[Verbatim, PString]] = (
+  def modifier: Parser[Either[Verbatim, PString]] = positioned(
     IF ~> validCode ^^ { c => Left(Verbatim(c)) }
     | ON ~> validDate ^^ { Right(_) }
     | failure("Modifiers must be identifier (lambda), quoted q code or on <date>")
@@ -73,8 +67,10 @@ object OrderlyParser extends JavaTokenParsers {
   | failure("Invalid date provided")
   )
 
-  def date: Parser[PString] =
-    positioned(wholeNumber ~ ('/' ~> wholeNumber) ~ ('/' ~> wholeNumber) ^^ { case m ~ d ~ y => PString(m + "/" + d + "/" + y)}
+  def date: Parser[PString] = positioned(
+    wholeNumber ~ ('/' ~> wholeNumber) ~ ('/' ~> wholeNumber) ^^ {
+      case m ~ d ~ y => PString(m + "/" + d + "/" + y)
+    }
       | failure("Expected date as MM/dd/yyyy")
       )
 
