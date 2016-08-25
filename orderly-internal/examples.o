@@ -1,0 +1,9 @@
+buy 100 shares of AAPL at $25.65 on 10/12/2009 -> t
+buy 100 shares of AAPL at $25.65 if "{10<exec avg close_price from x}" -> t1
+buy 100 shares of IBM at $25.65 if "{10<exec avg close_price from x}" -> t
+
+/
+mkt:([]close_price:100?100)
+cal:enlist[`date]!enlist 2009.10.12
+satisfies[t; mkt]
+satisfies[t; cal]

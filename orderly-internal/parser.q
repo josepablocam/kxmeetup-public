@@ -54,6 +54,7 @@ vol:{
   error["Expected volume";" found "," " sv (),/:2#x]
   ]
  }
+price:{$["$"~first x 0;num enlist 1_x 0;error["Expected price:$<num>";" found ",getStr[x;0]]]}
 modifier:{
   $[(IF x 0);
     $[first[x 1] in quotes;
@@ -75,7 +76,7 @@ consume0:{[p;t] (first res;(last res:p t)_t)}
 consume:{[ps;t] first each {consume0[y;last x]}\[(();t);ps]}
 
 // orderly grammar as a list (we have a simple grammar :) )
-grammar:(side;vol;accept[OF;"of"];ident;accept[AT;"at"];num;modifier;forClause;accept[{x~"->"};"->"];ident);
+grammar:(side;vol;accept[OF;"of"];ident;accept[AT;"at"];price;modifier;forClause;accept[{x~"->"};"->"];ident);
 
 // wrap to avoid having errors return deeper functions (no need to worry
 // user with implementation)

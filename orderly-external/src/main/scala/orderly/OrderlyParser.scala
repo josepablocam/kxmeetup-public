@@ -33,7 +33,7 @@ object OrderlyParser extends JavaTokenParsers {
   def order: Parser[MarketOrder] = positioned(
     side ~ volume ~
       (OF ~> cleanIdent) ~
-      (AT ~> floatingPointNumber)~
+      (AT ~> "$" ~> floatingPointNumber) ~
       modifier ~
       (FOR ~> cleanIdent).? ^^ {
       case s ~ v ~ sym ~ px ~ m ~ c => MarketOrder(s, sym, v, PDouble(px.toDouble), m, c)

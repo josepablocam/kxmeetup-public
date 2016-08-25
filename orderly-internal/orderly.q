@@ -1,3 +1,4 @@
 \l parser.q
 \l analysis.q
-.o.e:check parser@;
+\l interpret.q
+.o.e:interpret check parser@;
