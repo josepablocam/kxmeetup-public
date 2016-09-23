@@ -7,6 +7,7 @@ import scala.util.Try
 import scala.util.parsing.combinator.JavaTokenParsers
 
 object OrderlyParser extends JavaTokenParsers {
+  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
   val dateParser = new SimpleDateFormat("MM/dd/yyyy")
   dateParser.setLenient(false)

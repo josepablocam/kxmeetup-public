@@ -32,13 +32,15 @@ isUnary:{
     0b]
   }
 // main semantic check function
-check:{
+check0:{
   getVolume[x] should be ({x > 0};{"Volume should be positive"});
   getPrice[x] should be ({x > 0};{"Price should be positive"});
   x:setModifier[x;] wrapDate getModifier x;
   getModifier[x] should be (isUnary;{"Expected unary function"});
   x
- }
+  };
+
+ check:{@[check0;x;{'x}]}
 
 // we've atoned for our sins
 .q: `should _ .q;

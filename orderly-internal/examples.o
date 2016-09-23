@@ -1,9 +1,9 @@
-buy 100 shares of AAPL at $25.65 on 10/12/2009 -> t
-buy 100 shares of AAPL at $25.65 if "{10<exec avg close_price from x}" -> t1
-buy 100 shares of IBM at $25.65 if "{10<exec avg close_price from x}" -> t
+sell 1000 shares of IBM at $50 on 05/16/2016 for BAML -> order_book
+// uses an embedded q fun
+buy $1e6 of AAPL at $100 if "{[env] 10 < exec avg close_price from env where sector=`Tech} " -> order_book
 
 /
-mkt:([]close_price:100?100)
+mkt:([]close_price:100?100;sector:100?`Tech`Fin)
 cal:enlist[`date]!enlist 2009.10.12
-satisfies[t; mkt]
-satisfies[t; cal]
+satisfies[order_book; mkt]
+satisfies[order_book; cal]
